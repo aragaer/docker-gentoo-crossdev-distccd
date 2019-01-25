@@ -1,9 +1,10 @@
 FROM samuelololol/docker-gentoo-websync
-MAINTAINER samuelololol <samuelololol@gmail.com>
+MAINTAINER aragaer <aragaer@gmail.com>
 RUN rm /sbin/unix_chkpwd
-RUN emerge crossdev sys-libs/db sys-libs/pam sys-apps/iproute2 dev-lang/perl \
+RUN emerge sys-libs/db sys-libs/pam sys-apps/iproute2 dev-lang/perl \
     sys-libs/binutils-libs
     # helps to save time for building later image
+RUN USE=cross-aarch64-unknown-linux-gnu/gcc emerge crossdev
 RUN USE="${USE} crossdev" emerge distcc
 RUN mkdir -p /usr/local/portage-crossdev/{profiles,metadata} && \
     echo 'crossdev' > /usr/local/portage-crossdev/profiles/repo_name && \
@@ -29,7 +30,8 @@ RUN emerge ccache && \
     echo 'CCACHE_DIR="/var/tmp/portage/ccache"' >> /etc/portage/make.conf && \
     echo 'CCACHE_TEMPDIR="/var/tmp/portage/ccache"' >> /etc/portage/make.conf
 RUN emerge -f binutils gcc linux-headers glibc
-RUN crossdev -S -P "-v" -t armv7a-hardfloat-linux-gnueabihf
-RUN rm -r /usr/portage
-CMD ["/usr/local/sbin/distccd-launcher", "--allow", "0.0.0.0/0", "--user", "distcc", "--log-level", "notice", "--log-stderr", "--no-detach"]
+RUN crossdev -S -P "-v" -t armv7a-unknown-linux-gnueabihf
+#RUN rm -r /usr/portage
+ENTRYPOINT ["/usr/local/sbin/distccd-launcher"]
+CMD ["--allow", "0.0.0.0/0", "--user", "distcc", "--log-level", "debug", "--log-stderr", "--no-detach"]
 EXPOSE 3632
